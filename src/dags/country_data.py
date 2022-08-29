@@ -21,6 +21,9 @@ def process_country_data_callable(ti):
   # Convert Code column to int
   df['Code'] = df['Code'].astype(int)
 
+  # Rename columns
+  df.rename({'Geographical Zone': 'zone', 'Code': 'id', 'Country': 'name'}, axis=1, inplace=True)
+
   # Write to staging volume
   df.to_parquet(os.path.join(STAGING_PATH, 'staged', 'country_data_stage.parquet'), index=False)
 

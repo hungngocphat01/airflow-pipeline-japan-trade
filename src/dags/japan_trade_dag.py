@@ -1,4 +1,3 @@
-from concurrent.futures import process
 import os 
 from datetime import datetime
 
@@ -29,6 +28,9 @@ with DAG(
   process_country_data = country_data.process_country_data
   process_hs_data = hs_data.process_hs_data
   upload_to_gcs = gcp.upload_staging_gcs
+  copy_spark_app = gcp.copy_spark_app
+  spark_transform_ingest = gcp.spark_transform_ingest
 
-  prepare_fs >> download_country_data >> process_country_data >> upload_to_gcs
-  prepare_fs >> download_hs_data >> process_hs_data >> upload_to_gcs
+  prepare_fs >> download_country_data >> process_country_data >> copy_spark_app
+  prepare_fs >> download_hs_data >> process_hs_data >> copy_spark_app
+  copy_spark_app >> upload_to_gcs >> spark_transform_ingest
