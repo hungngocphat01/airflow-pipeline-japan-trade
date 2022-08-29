@@ -8,7 +8,7 @@ from airflow.operators.python import PythonOperator
 
 import country_data
 import hs_data
-import hadoop
+import gcp
 
 STAGING_PATH = os.environ['AIRFLOW_STAGING_PATH']
 STAGED_PATH = os.path.join(STAGING_PATH, 'staged')
@@ -28,7 +28,7 @@ with DAG(
 
   process_country_data = country_data.process_country_data
   process_hs_data = hs_data.process_hs_data
-  upload_to_hdfs = hadoop.upload_staging_hdfs
+  upload_to_gcs = gcp.upload_staging_gcs
 
-  prepare_fs >> download_country_data >> process_country_data >> upload_to_hdfs
-  prepare_fs >> download_hs_data >> process_hs_data >> upload_to_hdfs
+  prepare_fs >> download_country_data >> process_country_data >> upload_to_gcs
+  prepare_fs >> download_hs_data >> process_hs_data >> upload_to_gcs
