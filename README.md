@@ -22,18 +22,18 @@
 - Transform & load stage 1
   - **download_country_data**: download the _Japanese customs country code_ dataset.
   - **download_hs_data**: download the _HS Code (2017)_ dataset.
-  - **process_country_data**: simple transformations (set header row and type casting).
-  - **process_hs_data**: simple transformation (delete erroneous rows).
+  - **process_country_data**: simple transformations (set header row and type casting). Save to staging directory.
+  - **process_hs_data**: simple transformation (delete erroneous rows). Save to staging directory.
   - **copy_spark_job**: copy the Spark job responsible for running stage 2 to staging area together with the datasets.
   - **upload_staging_to_gcs**: upload staged files to GCS.
 - Transform & load stage 2
   - **run_dataproc_spark**
-    - Since the main dataset (_Japanese trade statistics_) is too big (110M rows) to be processed locally, we have to do it on the cluster. 
+    - Since the main dataset (_Japanese trade statistics_) is too big (110M rows) to be processed locally, doing so on the Dataproc cluster is a better idea.
     - Load fact table, then:
-      - Split `ym` columns into seperated `year` and `month` columns.
-      - Change `exp_imp` column from number-encoded into text.
-      - Extract `hs6_code` from the Japanese 9-digit statistics tracking ID.
-      - Cast several other columns to correct type.
+      - Split `ym` column into separated `year` and `month` columns.
+      - Convert `exp_imp` column from number-encoded into text.
+      - Extract `hs6_code` from the Japanese 9-digit statistics tracking ID (6-digit HS code + 3-digit domestic code). I could not find the domestic code catalogue so I just got rid of them.
+      - Cast several other columns to their correct type.
     - Ingest fact table to Hive, partitioned by `year`. 
     - Ingest dimension tables to Hive.
 
@@ -45,7 +45,7 @@
 ## How to
 
 ### Setup GCS
-1. Create a service account and give it the following permissions (this is a really bad idea, and i am just too lazy to setup proper custom permissions)
+1. Create a service account and give it the following permissions (this is a really bad idea, i'm just too lazy to setup proper custom permissions)
    <!-- - BigQuery Admin  -->
    - Storage Admin 
    - Storage Object Admin 
@@ -70,14 +70,15 @@
    - Project ID: `<YOUR PROJECT ID>`
 
 ### Run the pipeline 
-1. Manually load the file `custom_1988_2020.csv` (from the _first_ dataset listed above) to **the root of your cluster HDFS** (due to practical limitations of my Internet connection, this should be done manually).
+1. Manually load the file `custom_1988_2020.csv` (from the _first_ dataset listed above) to **the root directory of your 
+HDFS** (very heavy, downloading it directly to the cluster seems like a better idea).
    ```bash 
    wget <URL> -O custom_1988_2020.csv.zip
    unzip custom_1988_2020.csv.zip
    hadoop dfs -put custom_1988_2020.csv hdfs://
    ```
 2. Run the DAG from the local Airflow dashboard.
-3. Done. All three datasets should be loaded into Apache Hive running in the cluster.
+3. Done. All three datasets should be loaded into Apache Hive running on Dataproc.
 
 ### Manual works 
 The data has been transformed and stored to Apache Hive for further analytics. Below steps are expected to be done manually.
