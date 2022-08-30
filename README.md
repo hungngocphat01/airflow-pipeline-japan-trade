@@ -19,14 +19,14 @@
 ![airflow_pipeline](assets/airflow_pipeline.png)
 
 - **prepare_fs**: create staging directory in staging volume if not exists.
-- Transform & load stage 1
+- Transform & load stage 1 (runs locally)
   - **download_country_data**: download the _Japanese customs country code_ dataset.
   - **download_hs_data**: download the _HS Code (2017)_ dataset.
   - **process_country_data**: simple transformations (set header row and type casting). Save to staging directory.
   - **process_hs_data**: simple transformation (delete erroneous rows). Save to staging directory.
   - **copy_spark_job**: copy the Spark job responsible for running stage 2 to staging area together with the datasets.
   - **upload_staging_to_gcs**: upload staged files to GCS.
-- Transform & load stage 2
+- Transform & load stage 2 (runs on Dataproc cluster)
   - **run_dataproc_spark**
     - Since the main dataset (_Japanese trade statistics_) is too big (110M rows) to be processed locally, doing so on the Dataproc cluster is a better idea.
     - Load fact table, then:
@@ -83,8 +83,8 @@ HDFS** (very heavy, downloading it directly to the cluster seems like a better i
 ### Manual works 
 The data has been transformed and stored to Apache Hive for further analytics. Below steps are expected to be done manually.
 
-1. Some analytics with PySpark
-2. A simple MapReduce Job
+1. [Some analytics](src/extra/analytics.ipynb)) with PySpark
+2. ~~A simple MapReduce Job~~
 
 
 ## Future improvements (?)
