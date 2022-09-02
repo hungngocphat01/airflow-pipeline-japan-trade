@@ -1,4 +1,4 @@
-# (WIP) Apache Airflow pipeline and Spark/Hadoop practice
+# Apache Airflow pipeline and Spark/Hadoop practice
 
 ## Pipeline overview
 
